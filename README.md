@@ -5,7 +5,12 @@ Notion Markdown to Anki Converter: Basic (Front and Back) and Cloze Deletion
 
 Hey there! Thanks for checking out Noan!
 
-Steps:
+Steps for using:
+1. Download all the Python Files
+2. Run it from Noan.py!
+3. Enjoy!
+
+Steps for converting:
 
 1. Download your Notion page as a Markdown file (three dots to the top right of the page, and then scroll down and click export. Make sure to change the first option to CSV & Markdown)
 2. Unzip the file and make sure the .md is out
