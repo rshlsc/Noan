@@ -6,4 +6,7 @@ python-frontmatter==1.0.0
 flask-wtf==1.1.1
 html2markdown==0.1.7
 requests==2.31.0
-tqdm==4.66.1 
+tqdm==4.66.1
+gunicorn==20.1.0
+# Add Werkzeug to ensure compatibility with Flask
+Werkzeug==2.3.7 
