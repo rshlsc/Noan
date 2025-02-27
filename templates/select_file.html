@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noan - Select File</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+        }
+        .header h1 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,.05);
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+        }
+        .conversion-steps {
+            counter-reset: step;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .step {
+            list-style-type: none;
+            width: 33.33%;
+            position: relative;
+            text-align: center;
+            color: #6c757d;
+        }
+        .step:before {
+            content: counter(step);
+            counter-increment: step;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border: 1px solid #6c757d;
+            display: block;
+            text-align: center;
+            margin: 0 auto 10px auto;
+            border-radius: 50%;
+            background-color: white;
+        }
+        .step:after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background-color: #6c757d;
+            top: 15px;
+            left: -50%;
+            z-index: -1;
+        }
+        .step:first-child:after {
+            content: none;
+        }
+        .step.active:before {
+            background-color: #6a11cb;
+            color: white;
+            border-color: #6a11cb;
+        }
+        .step.active {
+            color: #6a11cb;
+            font-weight: 600;
+        }
+        .step.completed:before {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+            content: '✓';
+        }
+        .step.completed {
+            color: #28a745;
+        }
+        .file-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .file-item:hover {
+            background-color: #f8f6ff;
+            border-color: #6a11cb;
+        }
+        .file-item.selected {
+            background-color: #f8f6ff;
+            border-color: #6a11cb;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.1);
+        }
+        .file-icon {
+            color: #6a11cb;
+            margin-right: 10px;
+        }
+        .file-path {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Noan</h1>
+            <p class="lead">Select a File from Your Notion Export</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Steps Indicator -->
+        <ul class="conversion-steps">
+            <li class="step completed">Upload File</li>
+            <li class="step active">Configure</li>
+            <li class="step">Download Deck</li>
+        </ul>
+
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-file-alt me-2"></i> Select a File
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i> Your Notion export contains multiple files. Select which file to convert to Anki cards.
+                        </div>
+                        
+                        <form action="{{ url_for('convert') }}" method="post" id="file-selection-form">
+                            <input type="hidden" name="filepath" id="selected-file-path" value="">
+                            <input type="hidden" name="filename" id="selected-file-name" value="">
+                            
+                            <div class="file-list mb-4">
+                                {% for file in files %}
+                                    {% set filename = file.split('/')[-1] %}
+                                    <div class="file-item" data-path="{{ file }}" data-filename="{{ filename }}">
+                                        <i class="fas fa-file-alt file-icon"></i>
+                                        <strong>{{ filename }}</strong>
+                                        <span class="file-path">{{ file }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i> Back
+                                </a>
+                                <button type="submit" class="btn btn-primary" id="continue-button" disabled>
+                                    <i class="fas fa-arrow-right me-2"></i> Continue
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>Noan - Notion Markdown to Anki Converter</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // File selection
+        const fileItems = document.querySelectorAll('.file-item');
+        const selectedFilePath = document.getElementById('selected-file-path');
+        const selectedFileName = document.getElementById('selected-file-name');
+        const continueButton = document.getElementById('continue-button');
+        
+        fileItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove selected class from all items
+                fileItems.forEach(i => i.classList.remove('selected'));
+                
+                // Add selected class to clicked item
+                item.classList.add('selected');
+                
+                // Update hidden input values
+                selectedFilePath.value = item.dataset.path;
+                selectedFileName.value = item.dataset.filename;
+                
+                // Enable continue button
+                continueButton.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html> 

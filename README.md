@@ -1,37 +1,121 @@
-# Noan
-Notion Markdown to Anki Converter: Basic (Front and Back) and Cloze Deletion
+# Noan - Notion to Anki Converter
 
-# Welcome to Noan!
+A modern web-based tool to convert Notion exports (both Markdown and HTML) to Anki flashcards.
 
-Hey there! Thanks for checking out Noan!
+![Noan Logo](https://img.shields.io/badge/Noan-Notion%20to%20Anki-6a11cb?style=for-the-badge)
 
-Steps for using:
-1. Download all the Python Files
-2. Run it from Noan.py!
-3. Enjoy!
+## Features
 
-Steps for converting:
+- **Modern Web Interface**: Clean, intuitive UI for a seamless experience
+- **Multiple File Formats**: Support for both Markdown (.md) and HTML exports from Notion
+- **Multiple Card Types**: Create Basic, Cloze Deletion, and Basic-and-Reversed cards
+- **ZIP Export Support**: Automatically handle Notion's ZIP exports
+- **Preview Cards**: See how your cards will look before generating the deck
+- **Custom Tags**: Add tags to better organize your Anki cards
+- **Beautiful Card Styling**: Pre-styled cards for a better learning experience
 
-1. Download your Notion page as a Markdown file (three dots to the top right of the page, and then scroll down and click export. Make sure to change the first option to CSV & Markdown)
-2. Unzip the file and make sure the .md is out
-3. Upload and convert!
+## Installation
 
-Here is the format to follow for Front and Back card:
+1. Clone this repository
+2. Install the required dependencies:
 
-- You can use toggles or bullet points for front of the card
-    - and then a sub bullet point for the back
+```bash
+pip install -r requirements.txt
+```
 
-Here is the format to follow for Cloze Deletion:
+3. Run the application:
 
-- no bullet points (irony of me using bullet points to explain)
-- Example: The [Mitochondria] is the (Powerhouse of the Cell).
-    - ‘[]’ is the equivalent of {{c1}}
-    - ‘()’ is the equivalent of {{c2}}
-    - at the end of each cloze sentence, you MUST have a period. and make sure to put each sentence under each other!
-    
+```bash
+python app.py
+```
 
-Important Notes:
+4. Open your browser and navigate to `http://localhost:5000`
 
-- it will upload the file as ‘My Deck’ so please make sure to rename it
-- it does not update existing decks, but rest assured it is an update coming soon!
-- it will ignore the name of the page!
+## Usage
+
+### Step 1: Export Your Notion Page
+
+#### For Markdown Export (Recommended)
+1. In Notion, click the three dots (...) in the top-right corner of a page
+2. Select "Export"
+3. Choose "Markdown & CSV" as the export format
+4. Click "Export"
+5. You'll get a ZIP file - you can upload this directly to Noan!
+
+#### For HTML Export
+1. In Notion, click the three dots (...) in the top-right corner of a page
+2. Select "Export"
+3. Choose "HTML" as the export format
+4. Click "Export"
+5. You'll get a ZIP file - you can upload this directly to Noan!
+
+### Step 2: Convert to Anki
+
+1. Upload your Notion export to Noan
+2. Configure your deck settings:
+   - Choose your card type (Basic, Cloze, or Basic and Reversed)
+   - Set a deck name
+   - Add tags if desired
+3. Preview your cards
+4. Generate and download your Anki deck (.apkg file)
+
+### Step 3: Import into Anki
+
+1. Open Anki on your computer
+2. Click "File" > "Import"
+3. Select the .apkg file you downloaded
+4. Your new deck is ready to use!
+
+## Card Formatting
+
+### Basic (Front → Back) Cards
+
+In your Notion page, format your content like this:
+
+```
+- Question 
+    - Answer
+```
+
+Or using toggle lists:
+
+```
+- Question
+    - Answer with more details
+```
+
+### Cloze Deletion Cards
+
+Format your cloze deletions in Notion like this:
+
+```
+The [capital] of France is (Paris).
+```
+
+- `[text]` becomes `{{c1::text}}`
+- `(text)` becomes `{{c2::text}}`
+- `{text}` becomes `{{c3::text}}`
+
+### Basic and Reversed Cards
+
+Use the same format as Basic cards, but both directions will be created:
+
+```
+- Term
+    - Definition
+```
+
+This creates both "Term → Definition" and "Definition → Term" cards.
+
+## Contributing
+
+Contributions are welcome! Feel free to submit a pull request or open an issue.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- Built with Flask, Bootstrap, and genanki
+- Inspired by the original Noan tool

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noan - Configure Conversion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+        }
+        .header h1 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 1px solid rgba(0,0,0,.05);
+            font-weight: 600;
+            color: #495057;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            font-weight: 500;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+        }
+        .form-check-input:checked {
+            background-color: #6a11cb;
+            border-color: #6a11cb;
+        }
+        .preview-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        .preview-front {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .preview-back {
+            color: #6c757d;
+        }
+        .footer {
+            margin-top: 3rem;
+            padding: 2rem 0;
+            text-align: center;
+            color: #6c757d;
+        }
+        .flash-messages {
+            margin-bottom: 1.5rem;
+        }
+        .preview-section {
+            display: none;
+            margin-top: 2rem;
+        }
+        .mode-description {
+            margin-top: 0.5rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .conversion-steps {
+            counter-reset: step;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .step {
+            list-style-type: none;
+            width: 33.33%;
+            position: relative;
+            text-align: center;
+            color: #6c757d;
+        }
+        .step:before {
+            content: counter(step);
+            counter-increment: step;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border: 1px solid #6c757d;
+            display: block;
+            text-align: center;
+            margin: 0 auto 10px auto;
+            border-radius: 50%;
+            background-color: white;
+        }
+        .step:after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background-color: #6c757d;
+            top: 15px;
+            left: -50%;
+            z-index: -1;
+        }
+        .step:first-child:after {
+            content: none;
+        }
+        .step.active:before {
+            background-color: #6a11cb;
+            color: white;
+            border-color: #6a11cb;
+        }
+        .step.active {
+            color: #6a11cb;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Noan</h1>
+            <p class="lead">Configure Your Anki Deck</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Steps Indicator -->
+        <ul class="conversion-steps">
+            <li class="step">Upload File</li>
+            <li class="step active">Configure</li>
+            <li class="step">Download Deck</li>
+        </ul>
+
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-cog me-2"></i> Conversion Settings
+                    </div>
+                    <div class="card-body">
+                        <form action="{{ url_for('convert') }}" method="post" id="convert-form">
+                            <input type="hidden" name="filepath" value="{{ session_data.filepath }}">
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Selected File</label>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    {{ session_data.filename }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="deck_name" class="form-label fw-bold">Deck Name</label>
+                                <input type="text" class="form-control" id="deck_name" name="deck_name" value="My Deck" required>
+                                <div class="form-text">This will be the name of your Anki deck.</div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Card Type</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="mode" id="mode_front_back" value="anki_front_back" checked>
+                                    <label class="form-check-label" for="mode_front_back">
+                                        Basic (Front → Back)
+                                    </label>
+                                    <div class="mode-description">
+                                        Creates cards with a question on the front and answer on the back.
+                                        <code>- Question<br>&nbsp;&nbsp;&nbsp;&nbsp;- Answer</code>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="mode" id="mode_cloze" value="anki_cloze">
+                                    <label class="form-check-label" for="mode_cloze">
+                                        Cloze Deletion
+                                    </label>
+                                    <div class="mode-description">
+                                        Creates cards with text to be filled in.
+                                        <code>The [capital] of France is (Paris).</code>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="mode" id="mode_basic_and_reversed" value="anki_basic_and_reversed">
+                                    <label class="form-check-label" for="mode_basic_and_reversed">
+                                        Basic and Reversed
+                                    </label>
+                                    <div class="mode-description">
+                                        Creates cards in both directions: A→B and B→A.
+                                        <code>- Term<br>&nbsp;&nbsp;&nbsp;&nbsp;- Definition</code>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Options</label>
+                                
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="include_tags" id="include_tags" checked>
+                                    <label class="form-check-label" for="include_tags">
+                                        Add Tags
+                                    </label>
+                                </div>
+                                
+                                <div class="mb-3 tag-options">
+                                    <label for="tags" class="form-label">Tags (comma separated)</label>
+                                    <input type="text" class="form-control" id="tags" name="tags" placeholder="notion, imported">
+                                </div>
+                                
+                                <div class="form-check mb-2 reversed-options">
+                                    <input class="form-check-input" type="checkbox" name="include_reversed" id="include_reversed" checked>
+                                    <label class="form-check-label" for="include_reversed">
+                                        Include Reversed Cards
+                                    </label>
+                                    <div class="form-text">For Basic and Reversed mode only.</div>
+                                </div>
+                                
+                                <div class="mb-3 cloze-options" style="display: none;">
+                                    <label for="extra" class="form-label">Extra Information (optional)</label>
+                                    <textarea class="form-control" id="extra" name="extra" rows="2" placeholder="Additional information to show on all cloze cards"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <button type="button" id="preview-button" class="btn btn-secondary">
+                                    <i class="fas fa-eye me-2"></i> Preview Cards
+                                </button>
+                            </div>
+                            
+                            <div id="preview-section" class="preview-section">
+                                <h5><i class="fas fa-eye me-2"></i> Card Preview</h5>
+                                <div id="preview-content" class="mb-3">
+                                    <div class="alert alert-info">Click "Preview Cards" to see a sample of your flashcards.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i> Back
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-magic me-2"></i> Generate Deck
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <p>Noan - Notion Markdown to Anki Converter</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle options based on mode
+        const modeRadios = document.querySelectorAll('input[name="mode"]');
+        const reversedOptions = document.querySelector('.reversed-options');
+        const clozeOptions = document.querySelector('.cloze-options');
+        
+        function updateOptions() {
+            const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+            
+            if (selectedMode === 'anki_basic_and_reversed') {
+                reversedOptions.style.display = 'block';
+            } else {
+                reversedOptions.style.display = 'none';
+            }
+            
+            if (selectedMode === 'anki_cloze') {
+                clozeOptions.style.display = 'block';
+            } else {
+                clozeOptions.style.display = 'none';
+            }
+        }
+        
+        modeRadios.forEach(radio => {
+            radio.addEventListener('change', updateOptions);
+        });
+        
+        // Initialize options display
+        updateOptions();
+        
+        // Toggle tag options
+        const includeTagsCheckbox = document.getElementById('include_tags');
+        const tagOptions = document.querySelector('.tag-options');
+        
+        includeTagsCheckbox.addEventListener('change', () => {
+            if (includeTagsCheckbox.checked) {
+                tagOptions.style.display = 'block';
+            } else {
+                tagOptions.style.display = 'none';
+            }
+        });
+        
+        // Preview functionality
+        const previewButton = document.getElementById('preview-button');
+        const previewSection = document.getElementById('preview-section');
+        const previewContent = document.getElementById('preview-content');
+        
+        previewButton.addEventListener('click', async () => {
+            previewSection.style.display = 'block';
+            previewContent.innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+            
+            const formData = new FormData(document.getElementById('convert-form'));
+            
+            try {
+                const response = await fetch('{{ url_for("preview") }}', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let previewHTML = '';
+                    
+                    if (data.mode === 'anki_cloze') {
+                        data.preview.forEach(item => {
+                            previewHTML += `
+                                <div class="preview-card">
+                                    <div class="preview-front">${item.text}</div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        data.preview.forEach(item => {
+                            previewHTML += `
+                                <div class="preview-card">
+                                    <div class="preview-front">${item.front}</div>
+                                    <hr>
+                                    <div class="preview-back">${item.back}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    if (data.preview.length === 0) {
+                        previewHTML = '<div class="alert alert-warning">No cards found. Please check your file formatting.</div>';
+                    } else if (data.preview.length < 5) {
+                        previewHTML += '<div class="alert alert-info">Showing all cards found.</div>';
+                    } else {
+                        previewHTML += '<div class="alert alert-info">Showing sample of first 5 cards.</div>';
+                    }
+                    
+                    previewContent.innerHTML = previewHTML;
+                } else {
+                    previewContent.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                }
+            } catch (error) {
+                previewContent.innerHTML = '<div class="alert alert-danger">Failed to generate preview. Please try again.</div>';
+            }
+        });
+    </script>
+</body>
+</html> 
